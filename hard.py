@@ -1,17 +1,22 @@
 # define variables
-marker_3_count = 0
+marker_3_count = 1
 marker_func_list = [None,marker_1,marker_2,marker_3,marker_4,marker_5]
+end = False
 def get_marker():
+    vision_ctrl.enable_detection(rm_define.vision_detection_marker)
+
     while True:
         # Get marker detection info
         marker_info = vision_ctrl.get_marker_detection_info()
         # Check if any markers are detected
         if marker_info[0] == 1:
             marker_id = marker_info[1 + i * 6]
-            return marker_id
+            vision_ctrl.disable_detection(rm_define.vision_detection_marker)
+            return marker_id - 10
         # Error seeing multiple markers
-        else:
-            print('Error, multiple markers detected')
+
+        else: 
+            print('No marker detected')
         time.sleep(0.1)
     
 def align_to_marker(target_marker_id):
@@ -111,7 +116,7 @@ def moveUntil_IRdetect(safe_distance):
         chassis_ctrl.move_with_distance(0,safe_distance/100 * 0.5)
 
         #time.sleep(1)
-
+        ir_distance_sensor_ctrl.disable_measure(1)
         print("complete")
 
 def reset_to_marker(marker_number, gap):
@@ -182,7 +187,7 @@ def marker_1():
     return
 
 def marker_2():
-
+    reset_to_marker(12,10)
     #robot is at H3 and facing H3
 
     #move to turn
@@ -202,18 +207,15 @@ def marker_2():
     moveUntil_IRdetect(20)
 
     #wait for gunner to shoot target
-    ##time.sleep(5)
-
-    align_to_marker(13)
-
-    #Cross gate
-
+    time.sleep(5)
+    #cross gate
+    chassis_ctrl.move_with_distance(0, 1)
     return
 
 def marker_3(count):
     reset_to_marker(13,10)
+    
     if count == 1:
-
         #Grabs cone
         robotic_arm_ctrl.moveto(0,0,wait_for_complete=True)
         gripper_ctrl.update_power_level(3)
@@ -245,6 +247,9 @@ def marker_3(count):
         #time.sleep(1.5/0.5)
         chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
         #time.sleep(1)
+
+        #increase count for next marker 3
+        count += 1
 
         
 
@@ -299,29 +304,25 @@ def marker_5():
     chassis_ctrl.move(0)
     vision_ctrl.enable_detection(rm_define.vision_detection_marker)
     vision_ctrl.cond_wait(rm_define.cond_recognized_marker_trans_red_heart)
+
     chassis_ctrl.stop()
     vision_ctrl.disable_detection(rm_define.vision_detection_marker)
     moveUntil_IRdetect(10)
-
+    end = True
     #completed
     print("Completed execution! Hooray")
 
 
 def start():
 
-    gripper_ctrl.recenter()
-    
-    for i in range(2):
-        align_to_marker(11)
-        marker_1()
+    while True:
 
-    align_to_marker(12)
+        marker_number = get_marker()
+        print(f"marker number: {marker_number}")
+        marker_func_list[marker_number]()
+        if end == True:
+            break
+        
+        
 
-    marker_2()
 
-    #insert while true loop, break when marker is detected
-
-    marker_3(marker_3_count)
-
-    marker_4()
-    
