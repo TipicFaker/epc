@@ -1,6 +1,6 @@
 # define variables
 marker_3_count = 0
-
+marker_func_list = [None,marker_1,marker_2,marker_3,marker_4,marker_5]
 def get_marker():
     while True:
         # Get marker detection info
@@ -12,9 +12,11 @@ def get_marker():
         # Error seeing multiple markers
         else:
             print('Error, multiple markers detected')
-        sleep(0.1)
+        time.sleep(0.1)
     
 def align_to_marker(target_marker_id):
+
+    FOV = 120
 
     vision_ctrl.enable_detection(rm_define.vision_detection_marker)
     for i in range(2):
@@ -27,6 +29,7 @@ def align_to_marker(target_marker_id):
             
             # Check if any markers are detected
             if marker_info[0] > 0:
+
                 # Loop through the detected markers
                 num_markers = marker_info[0]
                 for i in range(num_markers):
@@ -85,10 +88,6 @@ def move_to_object(gap):
     print(dist)
     chassis_ctrl.move_with_distance(0,(dist - gap)/110)
 
-def reset_to_marker(marker_number, gap):
-    align_to_marker(marker_number)
-    move_to_object(gap)
-
 #recs = 0
 def moveUntil_IRdetect(safe_distance):
 
@@ -102,7 +101,7 @@ def moveUntil_IRdetect(safe_distance):
         ir_distance_sensor_ctrl.cond_wait('ir_distance_1_lt_' + str(safe_distance))
 
         #while ir_distance_sensor_ctrl.get_distance_info(1) > safe_distance:
-            #time.sleep(0.01)
+            ##time.sleep(0.01)
     
         chassis_ctrl.stop()
 
@@ -111,9 +110,14 @@ def moveUntil_IRdetect(safe_distance):
         chassis_ctrl.set_trans_speed(0.2)
         chassis_ctrl.move_with_distance(0,safe_distance/100 * 0.5)
 
-        time.sleep(1)
+        #time.sleep(1)
 
         print("complete")
+
+def reset_to_marker(marker_number, gap):
+    align_to_marker(marker_number)
+    #move_to_object(gap)
+    moveUntil_IRdetect(5)
 
 def marker_1():
 
@@ -142,17 +146,16 @@ def marker_1():
 
     # turn right 90 degrees
     
-    chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)#.wait_for_complete=True
-    time.sleep(90/rotate_speed)
-    chassis_ctrl.stop()
+    chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
+    #time.sleep(90/rotate_speed)
 
     # go to turn
     moveUntil_IRdetect(safe_distance)
     chassis_ctrl.set_trans_speed(move_speed)
     
     #turn 90 left
-    chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 90)#.wait_for_complete=True
-    time.sleep(90/rotate_speed)
+    chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 90)
+    #time.sleep(90/rotate_speed)
 
     #move until hit
 
@@ -160,8 +163,8 @@ def marker_1():
     chassis_ctrl.set_trans_speed(move_speed)
 
     #turn 90 left
-    chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 90)#.wait_for_complete=True
-    time.sleep(90/rotate_speed)
+    chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 90)
+    #time.sleep(90/rotate_speed)
 
     chassis_ctrl.move_with_distance(90, 0.2)
 
@@ -171,8 +174,8 @@ def marker_1():
     chassis_ctrl.set_trans_speed(move_speed)
 
     #turn 90 right
-    chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)#.wait_for_complete=True
-    time.sleep(90/rotate_speed)
+    chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
+    #time.sleep(90/rotate_speed)
 
     print("m1 finish")
 
@@ -185,13 +188,13 @@ def marker_2():
     #move to turn
     chassis_ctrl.set_trans_speed(1)
     chassis_ctrl.move_with_distance(90,1.3)
-    time.sleep(1.3/1)
+    #time.sleep(1.3/1)
     chassis_ctrl.stop()
 
     #face door
     chassis_ctrl.set_rotate_speed(45)
     chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
-    time.sleep(180/45)
+    #time.sleep(180/45)
     chassis_ctrl.stop()
 
     #keep moving until against door
@@ -199,95 +202,120 @@ def marker_2():
     moveUntil_IRdetect(20)
 
     #wait for gunner to shoot target
-    #time.sleep(5)
+    ##time.sleep(5)
 
-    ir_distance_sensor_ctrl.enable_measure(1)
-    while ir_distance_sensor_ctrl.get_distance_info(i) > 10:
-        time.sleep(0.25)
-    ir_distance_sensor_ctrl.disable_measure(1)
+    align_to_marker(13)
 
     #Cross gate
-
-    chassis_ctrl.move_with_distance(0,0.8)
-    time.sleep(0.8/1)
-    chassis_ctrl.stop()
 
     return
 
 def marker_3(count):
-    reset_to_marker()
+    reset_to_marker(13,10)
     if count == 1:
+
         #Grabs cone
         robotic_arm_ctrl.moveto(0,0,wait_for_complete=True)
         gripper_ctrl.update_power_level(3)
         gripper_ctrl.close()
-        sleep(3)
+        time.sleep(2)
         robotic_arm_ctrl.recenter()
 
-
+        chassis_ctrl.set_rotate_speed(90)
         #Move to the next marker
-        chassis_ctrl.rotate_with_time(rm_define.anticlockwise,6)
-        move_to_object(10)
+        chassis_ctrl.rotate_with_degree(rm_define.anticlockwise,180)
+        moveUntil_IRdetect(10)
 
-        while True: 
-            if ir_distance_sensor_ctrl.get_distance_info(1) > 30:
-                break
-            sleep(0.1)
-        move_to_object(10)
-        chassis_ctrl.rotate_with_time(rm_define.clockwise,3)
+        ir_distance_sensor_ctrl.cond_wait('ir_distance_1_gt_30')
+            
+        moveUntil_IRdetect(10)
+        chassis_ctrl.rotate_with_degree(rm_define.clockwise,90)
+        
+        chassis_ctrl.set_trans_speed(0.5)
+
+        chassis_ctrl.move_with_distance(180, 0.2)
+        #time.sleep(2/5)
+        chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
+        #time.sleep(180/90)
+        
+        #wait for door to open
+        time.sleep(3)
+
+        chassis_ctrl.move_with_distance(0, 1.5)
+        #time.sleep(1.5/0.5)
+        chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
+        #time.sleep(1)
+
         
 
     elif count == 2:
         #Move to drop point
-        chassis_ctrl.rotate_with_time(rm_define.anticlockwise,3)
-        chassis_ctrl.move_with_distance(0,0)
+        chassis_ctrl.rotate_with_degree(rm_define.anticlockwise,90)
+        chassis_ctrl.move_with_distance(0,0.1)
         #Drop cone
         gripper_ctrl.open()
         sleep(3)
         #Move back to marker
-        chassis_ctrl.move_with_distance(0,0)
-        chassis_ctrl.rotate_with_time(rm_define.clockwise,6)
+        chassis_ctrl.move_with_distance(180,0.1)
+
+        gripper_ctrl.recenter()
+
+        chassis_ctrl.rotate_with_degree(rm_define.clockwise,180)
+        #move closer to marker 5
+        chassis_ctrl.move_with_distance(0,1)
+
     
 def marker_4(): # S turn, no stop
 
-    chassis_ctrl.set_trans_speed(1)
+    align_to_marker(14)
 
+    chassis_ctrl.set_trans_speed(0.5)
     chassis_ctrl.set_rotate_speed(90)
 
-    chassis_ctrl.move(0)
-    chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
+    chassis_ctrl.move_with_distance(0, 1.3)
+    #time.sleep(1.3/0.5)
+    chassis_ctrl.rotate_with_degree(rm_define.clockwise,135)
+    #time.sleep(135/90)
+    chassis_ctrl.move_with_distance(0, 1.3)
+    #time.sleep(1.3/0.5)
+    chassis_ctrl.rotate_with_degree(rm_define.anticlockwise,135)
+    #time.sleep(135/90)
 
-    time.sleep(2)
-
-    chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 180)
-
-    time.sleep(2)
-
-    chassis_ctrl.stop()
+    chassis_ctrl.move_with_distance(0,1)
+    #time.sleep(2)
 
     return
 
+def marker_5():
+
+    align_to_marker(15)
+
+    moveUntil_IRdetect(10)
+
+    chassis_ctrl.set_trans_speed(0.5)
+    chassis_ctrl.move_with_distance(90,1.3)
+    #time.sleep(1.3)
+
+    chassis_ctrl.move(0)
+    vision_ctrl.enable_detection(rm_define.vision_detection_marker)
+    vision_ctrl.cond_wait(rm_define.cond_recognized_marker_trans_red_heart)
+    chassis_ctrl.stop()
+    vision_ctrl.disable_detection(rm_define.vision_detection_marker)
+    moveUntil_IRdetect(10)
+
+    #completed
+    print("Completed execution! Hooray")
+
+
 def start():
 
-    #continously check for markers
-    #
-
-    #marker_1()
-
-    align_to_marker(13)
-    move_to_object(0.1)
-    marker_3(1)
-
-    '''
-
+    gripper_ctrl.recenter()
+    
     for i in range(2):
-
-    print(i)
-
-        #align_to_marker(11)
+        align_to_marker(11)
         marker_1()
 
-    #align_to_marker(12)
+    align_to_marker(12)
 
     marker_2()
 
@@ -296,4 +324,4 @@ def start():
     marker_3(marker_3_count)
 
     marker_4()
-    '''
+    
