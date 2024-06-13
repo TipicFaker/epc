@@ -2,6 +2,7 @@
 marker_3_count = 1
 marker_func_list = [None,marker_1,marker_2,marker_3,marker_4,marker_5]
 end = False
+
 def get_marker():
     vision_ctrl.enable_detection(rm_define.vision_detection_marker)
 
@@ -122,7 +123,42 @@ def moveUntil_IRdetect(safe_distance):
 def reset_to_marker(marker_number, gap):
     align_to_marker(marker_number)
     #move_to_object(gap)
-    moveUntil_IRdetect(5)
+    moveUntil_IRdetect(gap)
+
+def marker_distance()
+    marker_dist = 0
+    vision_ctrl.enable_detection(rm_define.vision_detection_marker)
+    vision_ctrl.set_marker_detection_distance(marker_dist)
+
+    marker_seen = False
+    while True:
+        # Get marker detection info
+        marker_info = vision_ctrl.get_marker_detection_info()
+    
+        # Check if any markers are detected
+        if marker_info[0] > 0:
+            print(f'Marker is {marker_dist} away')
+            marker_seen = True
+            return marker_dist
+            break
+        #increases possible marker distance range
+        else:
+            marker_dist += 0.05
+
+            #upper limit of camera range
+            if marker_dist > 4:
+                print('Error. Marker not seen')
+                marker_distance = 0
+            #Change detection distance
+            vision_ctrl.set_marker_detection_distance(marker_dist)
+            # Sleep for a short while to avoid overwhelming the processor
+            time.sleep(0.1)
+
+def reset_to_marker_w_camera(marker_number, gap):
+    align_to_marker(marker_number)
+    dist = marker_distance()
+    chassis_ctrl.move_with_distance(0,(dist - gap)/100)
+
 
 def marker_1():
 
@@ -212,10 +248,9 @@ def marker_2():
     chassis_ctrl.move_with_distance(0, 1)
     return
 
-def marker_3(count):
-    reset_to_marker(13,10)
-    
-    if count == 1:
+def marker_3():    
+    if marker_3_count == 1:
+        reset_to_marker(13,10)
         #Grabs cone
         robotic_arm_ctrl.moveto(0,0,wait_for_complete=True)
         gripper_ctrl.update_power_level(3)
@@ -226,35 +261,34 @@ def marker_3(count):
         chassis_ctrl.set_rotate_speed(90)
         #Move to the next marker
         chassis_ctrl.rotate_with_degree(rm_define.anticlockwise,180)
-        moveUntil_IRdetect(10)
+        # moveUntil_IRdetect(10)
 
-        ir_distance_sensor_ctrl.cond_wait('ir_distance_1_gt_30')
+        # ir_distance_sensor_ctrl.cond_wait('ir_distance_1_gt_30')
             
-        moveUntil_IRdetect(10)
-        chassis_ctrl.rotate_with_degree(rm_define.clockwise,90)
+        # moveUntil_IRdetect(10)
+        # chassis_ctrl.rotate_with_degree(rm_define.clockwise,90)
         
-        chassis_ctrl.set_trans_speed(0.5)
+        # chassis_ctrl.set_trans_speed(0.5)
 
-        chassis_ctrl.move_with_distance(180, 0.2)
-        #time.sleep(2/5)
-        chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
-        #time.sleep(180/90)
+        # chassis_ctrl.move_with_distance(180, 0.2)
+        # #time.sleep(2/5)
+        # chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
+        # #time.sleep(180/90)
         
         #wait for door to open
         time.sleep(3)
 
-        chassis_ctrl.move_with_distance(0, 1.5)
+        chassis_ctrl.move_with_distance(0, 3)
         #time.sleep(1.5/0.5)
         chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
         #time.sleep(1)
 
         #increase count for next marker 3
-        count += 1
+        marker_3_count += 1
 
-        
-
-    elif count == 2:
+    elif marker_3_count == 2:
         #Move to drop point
+        reset_to_marker_w_camera(13,0.5)
         chassis_ctrl.rotate_with_degree(rm_define.anticlockwise,90)
         chassis_ctrl.move_with_distance(0,0.1)
         #Drop cone
@@ -272,7 +306,7 @@ def marker_3(count):
     
 def marker_4(): # S turn, no stop
 
-    align_to_marker(14)
+    reset_to_marker_w_camera(14,0.5)
 
     chassis_ctrl.set_trans_speed(0.5)
     chassis_ctrl.set_rotate_speed(90)
@@ -322,7 +356,3 @@ def start():
         marker_func_list[marker_number]()
         if end == True:
             break
-        
-        
-
-
