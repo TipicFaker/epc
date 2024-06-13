@@ -22,7 +22,7 @@ def get_marker():
     
 def align_to_marker(target_marker_id):
 
-    FOV = 120
+    #FOV = 120
 
     vision_ctrl.enable_detection(rm_define.vision_detection_marker)
     for i in range(2):
@@ -126,7 +126,7 @@ def reset_to_marker(marker_number, gap):
     moveUntil_IRdetect(gap)
 
 def marker_distance()
-    marker_dist = 0
+    marker_dist = 0.5
     vision_ctrl.enable_detection(rm_define.vision_detection_marker)
     vision_ctrl.set_marker_detection_distance(marker_dist)
 
@@ -148,7 +148,7 @@ def marker_distance()
             #upper limit of camera range
             if marker_dist > 4:
                 print('Error. Marker not seen')
-                marker_distance = 0
+                marker_distance = 3
             #Change detection distance
             vision_ctrl.set_marker_detection_distance(marker_dist)
             # Sleep for a short while to avoid overwhelming the processor
@@ -164,12 +164,12 @@ def marker_1():
 
     #robotic_arm_ctrl.recenter()
 
-    print("m1 init")
+    #print("m1 init")
 
-    try:
-        print(dir(chassis_ctrl))
-    except:
-        print("dir unsucc")
+    #try:
+    #    print(dir(chassis_ctrl))
+    #except:
+    #    print("dir unsucc") #oop unaccessible
 
     rotate_speed = 90
     move_speed = 1
@@ -180,15 +180,13 @@ def marker_1():
 
 
     #move forward until wall
-
-    #chassis_ctrl.set_trans_speed(1)
+    
     moveUntil_IRdetect(safe_distance)
     chassis_ctrl.set_trans_speed(move_speed)
 
     # turn right 90 degrees
     
     chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
-    #time.sleep(90/rotate_speed)
 
     # go to turn
     moveUntil_IRdetect(safe_distance)
@@ -196,7 +194,6 @@ def marker_1():
     
     #turn 90 left
     chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 90)
-    #time.sleep(90/rotate_speed)
 
     #move until hit
 
@@ -205,7 +202,6 @@ def marker_1():
 
     #turn 90 left
     chassis_ctrl.rotate_with_degree(rm_define.anticlockwise, 90)
-    #time.sleep(90/rotate_speed)
 
     chassis_ctrl.move_with_distance(90, 0.2)
 
@@ -216,7 +212,6 @@ def marker_1():
 
     #turn 90 right
     chassis_ctrl.rotate_with_degree(rm_define.clockwise, 90)
-    #time.sleep(90/rotate_speed)
 
     print("m1 finish")
 
@@ -229,13 +224,11 @@ def marker_2():
     #move to turn
     chassis_ctrl.set_trans_speed(1)
     chassis_ctrl.move_with_distance(90,1.3)
-    #time.sleep(1.3/1)
     chassis_ctrl.stop()
 
     #face door
     chassis_ctrl.set_rotate_speed(45)
     chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
-    #time.sleep(180/45)
     chassis_ctrl.stop()
 
     #keep moving until against door
@@ -245,7 +238,7 @@ def marker_2():
     #wait for gunner to shoot target
     time.sleep(5)
     #cross gate
-    chassis_ctrl.move_with_distance(0, 1)
+    chassis_ctrl.move_with_distance(0, 0.5)
     return
 
 def marker_3():    
@@ -288,7 +281,7 @@ def marker_3():
 
     elif marker_3_count == 2:
         #Move to drop point
-        reset_to_marker_w_camera(13,0.5)
+        reset_to_marker_w_camera(13,15)
         chassis_ctrl.rotate_with_degree(rm_define.anticlockwise,90)
         chassis_ctrl.move_with_distance(0,0.1)
         #Drop cone
@@ -306,7 +299,7 @@ def marker_3():
     
 def marker_4(): # S turn, no stop
 
-    reset_to_marker_w_camera(14,0.5)
+    reset_to_marker_w_camera(14,15)
 
     chassis_ctrl.set_trans_speed(0.5)
     chassis_ctrl.set_rotate_speed(90)

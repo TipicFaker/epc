@@ -129,6 +129,8 @@ def marker_distance()
     vision_ctrl.enable_detection(rm_define.vision_detection_marker)
     vision_ctrl.set_marker_detection_distance(marker_dist)
 
+    time.sleep(0.5)
+
     marker_seen = False
     while True:
         # Get marker detection info
@@ -142,7 +144,7 @@ def marker_distance()
             break
         #increases possible marker distance range
         else:
-            marker_dist += 0.05
+            marker_dist += 0.1
 
             #upper limit of camera range
             if marker_dist > 4:
@@ -155,7 +157,7 @@ def marker_distance()
 
 def reset_to_marker_w_camera(marker_number, gap):
     align_to_marker(marker_number)
-    dist = marker_distance()
+    dist = marker_distance() * 100
     chassis_ctrl.move_with_distance(0,(dist - gap)/100)
 
 
@@ -201,8 +203,8 @@ def marker_2(): #E2
     # turn right 90 degrees
     chassis_ctrl.set_rotate_speed(45)
     chassis_ctrl.rotate_with_degree(rm_define.clockwise, 180)
-    time.sleep(2)
-    chassis_ctrl.stop()
+    #time.sleep(2)
+    #chassis_ctrl.stop()
 
     chassis_ctrl.set_trans_speed(0.5)
 
